@@ -1,6 +1,6 @@
 void setup() {  
   analogReference(EXTERNAL);
-  Serial.begin(115200);
+  Serial.begin(250000);
   while(!Serial);
 }
 

@@ -25,11 +25,11 @@ void setup() {
   TCCR2B &= 0b00110000;
   TIMSK2 &= 0b11111010;
   TIMSK2 |= 0b00000010;
-  OCR2A = 249;
+  OCR2A = 124;
   TCNT2 = 0;
   sei();//enable interrupts
   
-  Serial.begin(115200);  
+  Serial.begin(250000);  
 
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB
@@ -69,7 +69,7 @@ void stopTMR1() {
 }
 
 void startTMR2() {
-  TCCR2B |= 0b00000100;
+  TCCR2B |= 0b00000011;
 }
 
 void stopTMR2() {

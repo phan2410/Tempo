@@ -9,7 +9,7 @@ WiFiClient client;
 const int httpPort = 11247;
 void setup() {
 // Start Serial
-Serial.begin(115200);
+Serial.begin(250000);
 delay(10);
 // We start by connecting to a WiFi network
 Serial.println();
