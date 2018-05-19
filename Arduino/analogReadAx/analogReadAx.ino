@@ -1,10 +1,9 @@
 void setup() {  
-  analogReference(EXTERNAL);
+//  analogReference(EXTERNAL);
   Serial.begin(250000);
   while(!Serial);
 }
 
 void loop() {
-  Serial.println(analogRead(A8));
-  delay(10);
+  Serial.println(analogRead(A3));
 }

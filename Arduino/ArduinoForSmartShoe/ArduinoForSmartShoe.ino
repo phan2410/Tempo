@@ -3,11 +3,16 @@ volatile uint16_t tmpUInt = 0;
 byte pendingBytes[17] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13};
 volatile uint8_t currentAnalogChannel = 0;
 volatile uint8_t tmpUShort = 0;
+bool LedState = HIGH;
+uint16_t LedOnMSec = 0;
+uint16_t LedOffMSec = 0;
+int incomingByte;
+int stateCode;
+bool isBeingCommanded = false;
+uint8_t NumOfCommandBytes = 0;
 
-void setup() { 
-  
-  cli();//stop interrupts
-  
+void setup() {   
+  cli();//stop interrupts  
   //Initialize ADC 
   ADMUX = 0;
   ADCSRA = 0b10001111;//ADEN|ADIE|XTAL/128
@@ -28,14 +33,9 @@ void setup() {
   OCR2A = 124;
   TCNT2 = 0;
   sei();//enable interrupts
-  
   Serial.begin(250000);  
-
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB
-  }
-
-  startTMR1();
+  while (!Serial);//waiting for serial initialization
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 ISR(TIMER1_COMPA_vect) {  
@@ -81,5 +81,42 @@ void stopTMR2() {
 }
 
 void loop() {
-
+  if (Serial.available() > 0) {
+    incomingByte = Serial.read();
+    if (isBeingCommanded) {
+      ++NumOfCommandBytes;
+    }
+    if (incomingByte == 54) {
+      isBeingCommanded = true;
+      NumOfCommandBytes = 1;      
+    } else if (incomingByte == 99) {
+      if (NumOfCommandBytes == 3) {
+        if (stateCode == 9) {
+          stopTMR1();
+          LedOnMSec = 1000;
+          LedOffMSec = 1000;
+        } else if (stateCode == 18) {
+          stopTMR1();
+          LedOnMSec = 180;
+          LedOffMSec = 180;
+        } else if (stateCode == 27) {
+          startTMR1();
+          LedOnMSec = 54;
+          LedOffMSec = 54;          
+        } 
+      }
+      isBeingCommanded = false;
+    } else {
+      stateCode = incomingByte;
+    }
+  } 
+  if (LedOnMSec) {
+    LedState = !LedState;
+    digitalWrite(LED_BUILTIN, LedState);
+    if (LedState) {
+      delay(LedOnMSec);
+    } else {
+      delay(LedOffMSec);
+    }
+  }
 }
