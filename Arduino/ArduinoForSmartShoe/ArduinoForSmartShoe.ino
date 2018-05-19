@@ -15,7 +15,7 @@ void setup() {
   cli();//stop interrupts  
   //Initialize ADC 
   ADMUX = 0;
-  ADCSRA = 0b10001101;//ADEN|ADIE|XTAL/128
+  ADCSRA = 0b10001111;//ADEN|ADIE|XTAL/128
   //Initialize TMR1
   TCCR1A &= 0b00001100;
   TCCR1B &= 0b00101000;
@@ -30,7 +30,7 @@ void setup() {
   TCCR2B &= 0b00110000;
   TIMSK2 &= 0b11111010;
   TIMSK2 |= 0b00000010;
-  OCR2A = 21;
+  OCR2A = 71;
   TCNT2 = 0;
   sei();//enable interrupts
   Serial.begin(250000);
