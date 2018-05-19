@@ -86,16 +86,20 @@ void loop() {
       if (NumOfCommandBytes == 3) {
         if (stateCode == 9) {
           stopTMR1();
-          LedOnMSec = 1000;
-          LedOffMSec = 1000;
+          LedOnMSec = 9;
+          LedOffMSec = 567;
         } else if (stateCode == 18) {
           stopTMR1();
           LedOnMSec = 180;
           LedOffMSec = 180;
         } else if (stateCode == 27) {
           startTMR1();
-          LedOnMSec = 54;
-          LedOffMSec = 54;          
+          LedOnMSec = 45;
+          LedOffMSec = 45;        
+        } else if (stateCode == 36) {
+          stopTMR1();
+          LedOnMSec = 0;
+          LedOffMSec = 0;          
         } 
       }
       isBeingCommanded = false;
