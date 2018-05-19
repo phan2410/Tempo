@@ -15,7 +15,7 @@ void setup() {
   cli();//stop interrupts  
   //Initialize ADC 
   ADMUX = 0;
-  ADCSRA = 0b10001111;//ADEN|ADIE|XTAL/128
+  ADCSRA = 0b10001101;//ADEN|ADIE|XTAL/128
   //Initialize TMR1
   TCCR1A &= 0b00001100;
   TCCR1B &= 0b00101000;
@@ -30,32 +30,37 @@ void setup() {
   TCCR2B &= 0b00110000;
   TIMSK2 &= 0b11111010;
   TIMSK2 |= 0b00000010;
-  OCR2A = 124;
+  OCR2A = 21;
   TCNT2 = 0;
   sei();//enable interrupts
-  Serial.begin(250000);  
+  Serial.begin(250000);
   while (!Serial);//waiting for serial initialization
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
 ISR(TIMER1_COMPA_vect) {  
-  startTMR2();
+  TCCR2B |= 0b00000011;//start TMR2
 }
 
 ISR(TIMER2_COMPA_vect) {  
   ADMUX = (ADMUX & 0xF8)|currentAnalogChannel;
-  ADCSRA |= 0b01000000;
-  ++currentAnalogChannel;
+  ADCSRA |= 0b01000000;//start ADC conversion
+  if (++currentAnalogChannel == 8) {
+    TCCR2B &= 0x11111000;//stop TMR2
+    TCNT2 = 0;
+  }
 }
 
-ISR(ADC_vect){
+ISR(ADC_vect) {
   instantRead = ADCL | (ADCH << 8);
   tmpUInt = instantRead/43;
   pendingBytes[tmpUShort] = byte(tmpUInt + 48);
   pendingBytes[++tmpUShort] = byte(instantRead - tmpUInt*43 + 48);
   ++tmpUShort;
-  if (currentAnalogChannel > 7) {
-    stopTMR2();
+  if (currentAnalogChannel == 8) {
+    Serial.write(pendingBytes,17);
+    currentAnalogChannel = 0;
+    tmpUShort = 0;    
   }
 }
 
@@ -68,20 +73,8 @@ void stopTMR1() {
   TCNT1 = 0;
 }
 
-void startTMR2() {
-  TCCR2B |= 0b00000011;
-}
-
-void stopTMR2() {
-  TCCR2B &= 0x11111000;
-  TCNT2 = 0;
-  currentAnalogChannel = 0;
-  tmpUShort = 0;
-  Serial.write(pendingBytes,17);
-}
-
 void loop() {
-  if (Serial.available() > 0) {
+  if (Serial.available() != 0) {
     incomingByte = Serial.read();
     if (isBeingCommanded) {
       ++NumOfCommandBytes;
